@@ -78,13 +78,8 @@ func runClient() {
 			if len(splites) < 2 {
 				continue
 			}
-			if splites[0] == "Reg" {
-				// Send Reg request
-				req := NewRegisterRequest(splites[1])
-				if err := sendRequestAndPrintResponse(req, c); err != nil {
-					return
-				}
-			} else if splites[0] == "Send" {
+
+			if splites[0] == "Send" {
 				// Send message
 				req := NewSendRequest(splites[1], splites[2])
 				if err := sendRequestAndPrintResponse(req, c); err != nil {

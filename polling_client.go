@@ -68,18 +68,7 @@ func runPollingClient(path string) {
 				continue
 			}
 
-			if splits[0] == "Reg" {
-				req := NewRegisterRequest(splits[1])
-				marshaled, err := json.Marshal(req)
-				if err != nil {
-					log.Println("marshal:", err)
-					return
-				}
-
-				if err := sendRequestAndPrintReply(marshaled, u); err != nil {
-					return
-				}
-			} else if splits[0] == "Send" {
+			if splits[0] == "Send" {
 				req := NewSendRequest(splits[1], splits[2])
 				marshaled, err := json.Marshal(req)
 				if err != nil {
@@ -97,7 +86,7 @@ func runPollingClient(path string) {
 	for {
 		select {
 		case _ = <-ticker.C:
-			body := Request{Type: MSG_GET}
+			body := NewGetRequest()
 			postBody, err := json.Marshal(body)
 			if err != nil {
 				log.Println("marshall:", err)

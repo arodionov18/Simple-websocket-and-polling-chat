@@ -4,7 +4,6 @@ package main
 type RequestType int
 
 var (
-	MSG_REGISTER = RequestType(0)
 	MSG_SEND = RequestType(1)
 	MSG_GET = RequestType(2)
 )
@@ -15,12 +14,6 @@ type Request struct {
 	Text *string	`json:"text"`
 }
 
-func NewRegisterRequest(name string) Request {
-	return Request{
-		Type: MSG_REGISTER,
-		Name: &name,
-	}
-}
 
 func NewSendRequest(name, text string) Request {
 	return Request{

@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"log"
 	"net/http"
 
@@ -10,7 +9,6 @@ import (
 	"gopkg.in/olahol/melody.v1"
 )
 
-var clients = map[string]struct{}{}
 var chatHistory []Message
 var chatChannel = make(chan Message)
 
@@ -18,14 +16,6 @@ var chatChannel = make(chan Message)
 var m *melody.Melody
 
 
-func RegisterUser(name string) error {
-	_, ok := clients[name]
-	if ok {
-		return errors.New("choose different Name")
-	}
-	clients[name] = struct{}{}
-	return nil
-}
 
 func PollingServe(context *gin.Context) {
 	log.Println("Got polling request")
@@ -35,24 +25,7 @@ func PollingServe(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if json.Type == MSG_REGISTER {
-		err := RegisterUser(*json.Name)
-		if err != nil {
-			text := err.Error()
-			reply := Reply{Ok: false, Error: &text}
-			context.JSON(http.StatusBadRequest, reply)
-		}
-		reply := Reply{Ok: true, Messages: []Message{{Name: "", Text: "You are registered"}}}
-		context.JSON(http.StatusOK, reply)
-		return
-	} else if json.Type == MSG_SEND {
-		_, ok := clients[*json.Name]
-		if !ok {
-			text := "you must be registered before sending message"
-			reply := Reply{Ok: false, Error: &text}
-			context.JSON(http.StatusBadRequest, reply)
-		}
-
+	if json.Type == MSG_SEND {
 		str := PrepareSendMessage(*json.Name, *json.Text)
 		chatHistory = append(chatHistory, Message{Name: *json.Name, Text: *json.Text})
 		m.Broadcast(str)
@@ -76,24 +49,7 @@ func LongPollingServe(context *gin.Context) {
 		return
 	}
 
-	if json.Type == MSG_REGISTER {
-		err := RegisterUser(*json.Name)
-		if err != nil {
-			text := err.Error()
-			reply := Reply{Ok: false, Error: &text}
-			context.JSON(http.StatusBadRequest, reply)
-		}
-		reply := Reply{Ok: true, Messages: []Message{{Name: "", Text: "You are registered"}}}
-		context.JSON(http.StatusOK, reply)
-		return
-	} else if json.Type == MSG_SEND {
-		_, ok := clients[*json.Name]
-		if !ok {
-			text := "you must be registered before sending message"
-			reply := Reply{Ok: false, Error: &text}
-			context.JSON(http.StatusBadRequest, reply)
-		}
-
+	 if json.Type == MSG_SEND {
 		str := PrepareSendMessage(*json.Name, *json.Text)
 		chatHistory = append(chatHistory, Message{Name: *json.Name, Text: *json.Text})
 		chatChannel <- Message{Name: *json.Name, Text: *json.Text}
@@ -149,24 +105,8 @@ func ServeWebsocket(s *melody.Session, data []byte) {
 		return
 	}
 
-	if msg.Type == MSG_REGISTER {
-		log.Println("Register websocket request")
-
-		err := RegisterUser(*msg.Name)
-		if err != nil {
-			s.Write(PrepareSendError(err.Error()))
-			return
-		}
-
-		s.Write(PrepareSendMessage("", "You are registered"))
-	} else if msg.Type == MSG_SEND {
+	if msg.Type == MSG_SEND {
 		log.Println("Send websocket request")
-
-		_, ok := clients[*msg.Name]
-		if !ok {
-			s.Write(PrepareSendError("You must register before sending messages"))
-			return
-		}
 
 		str := PrepareSendMessage(*msg.Name, *msg.Text)
 		chatHistory = append(chatHistory, Message{Name: *msg.Name, Text: *msg.Text})

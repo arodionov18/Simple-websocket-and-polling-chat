@@ -1,4 +1,4 @@
-package message
+package main
 
 
 type RequestType int

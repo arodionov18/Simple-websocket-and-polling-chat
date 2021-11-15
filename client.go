@@ -11,8 +11,21 @@ import (
 	"strings"
 
 	"github.com/gorilla/websocket"
-	"websocket_chat/message"
 )
+
+func sendRequestAndPrintResponse(request Request, conn *websocket.Conn) error {
+	marshaled, err := json.Marshal(request)
+	if err != nil {
+		log.Println("marshal:", err)
+		return err
+	}
+	err = conn.WriteMessage(websocket.TextMessage, marshaled)
+	if err != nil {
+		log.Println("send:", err)
+		return err
+	}
+	return nil
+}
 
 func runClient() {
 	addr := "localhost:8088"
@@ -39,7 +52,7 @@ func runClient() {
 				return
 			}
 
-			var msg message.Reply
+			var msg Reply
 			err = json.Unmarshal(byteMsg, &msg)
 			if err != nil {
 				log.Println("unmarshal:", err)
@@ -67,28 +80,14 @@ func runClient() {
 			}
 			if splites[0] == "Reg" {
 				// Send Reg request
-				req := message.NewRegisterRequest(splites[1])
-				marshaled, err := json.Marshal(req)
-				if err != nil {
-					log.Println("marshal:", err)
-					return
-				}
-				err = c.WriteMessage(websocket.TextMessage, marshaled)
-				if err != nil {
-					log.Println("send:", err)
+				req := NewRegisterRequest(splites[1])
+				if err := sendRequestAndPrintResponse(req, c); err != nil {
 					return
 				}
 			} else if splites[0] == "Send" {
 				// Send message
-				req := message.NewSendRequest(splites[1], splites[2])
-				marshaled, err := json.Marshal(req)
-				if err != nil {
-					log.Println("marshal:", err)
-					return
-				}
-				err = c.WriteMessage(websocket.TextMessage, marshaled)
-				if err != nil {
-					log.Println("send:", err)
+				req := NewSendRequest(splites[1], splites[2])
+				if err := sendRequestAndPrintResponse(req, c); err != nil {
 					return
 				}
 			}

@@ -10,10 +10,10 @@
 
 После установки библиотек, делаем следующее:
 
-1. Для запуска сервера: `go run . -type=server -addr=:8088
-   `
-2. Для запуска polling клиента: `go run . -type=polling   `
-3. Для запуска websocket клиента: `go run . -type=client `
+1. Для запуска сервера: `go run . -type=server -addr=:8088`
+2. Для запуска polling клиента: `go run . -type=polling`
+3. Для запуска longpolling клиента: `go run . -type=longpolling`(Реализация совпадает с polling, просто ходит по другому адресу)
+4. Для запуска websocket клиента: `go run . -type=client`
 
 Так же можно установить websocket соединение через postman(https://blog.postman.com/postman-supports-websocket-apis/)
 `ws://localhost:8088/ws` в качестве адреса, в параметры например:

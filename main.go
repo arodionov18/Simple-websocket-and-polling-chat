@@ -13,6 +13,8 @@ func main() {
 	} else if *typ == "client" {
 		runClient()
 	} else if *typ == "polling" {
-		runPollingClient()
+		runPollingClient("/")
+	} else if *typ == "longpolling" {
+		runPollingClient("/longPolling")
 	}
 }

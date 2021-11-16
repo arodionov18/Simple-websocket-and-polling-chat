@@ -56,7 +56,9 @@ func PollingServe(context *gin.Context) {
 		str := PrepareSendMessage(*json.Name, *json.Text)
 		chatHistory = append(chatHistory, Message{Name: *json.Name, Text: *json.Text})
 		m.Broadcast(str)
-		chatChannel <- Message{Name: *json.Name, Text: *json.Text}
+		go func() {
+			chatChannel <- Message{Name: *json.Name, Text: *json.Text}
+		}()
 
 		reply := Reply{Ok: true, Messages: []Message{}}
 		context.JSON(http.StatusOK, reply)
@@ -96,8 +98,11 @@ func LongPollingServe(context *gin.Context) {
 
 		str := PrepareSendMessage(*json.Name, *json.Text)
 		chatHistory = append(chatHistory, Message{Name: *json.Name, Text: *json.Text})
-		chatChannel <- Message{Name: *json.Name, Text: *json.Text}
 		m.Broadcast(str)
+
+		go func() {
+			chatChannel <- Message{Name: *json.Name, Text: *json.Text}
+		}()
 
 		reply := Reply{Ok: true, Messages: []Message{}}
 		context.JSON(http.StatusOK, reply)
@@ -170,8 +175,13 @@ func ServeWebsocket(s *melody.Session, data []byte) {
 
 		str := PrepareSendMessage(*msg.Name, *msg.Text)
 		chatHistory = append(chatHistory, Message{Name: *msg.Name, Text: *msg.Text})
-		chatChannel <- Message{Name: *msg.Name, Text: *msg.Text}
+
 		m.Broadcast(str)
+
+		go func() {
+			chatChannel <- Message{Name: *msg.Name, Text: *msg.Text}
+		}()
+
 	}
 }
 
